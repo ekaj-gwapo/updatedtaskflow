@@ -169,41 +169,12 @@ export function ActionStepsSection({
                 )}
               </div>
 
-              {/* Progress notes - Show by default */}
+              {/* Progress Details section header - Notes hidden */}
               {step.notes.length > 0 && (
                 <div className="border-t border-border px-3 py-3 bg-background/50 space-y-2">
-                  <div className="flex flex-col gap-2">
-                    {step.notes.map((note) => {
-                      const initials = note.authorName
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                      return (
-                        <div key={note.id} className="flex gap-2">
-                          <Avatar className="h-5 w-5 shrink-0 mt-0.5">
-                            <AvatarFallback className="bg-primary text-primary-foreground text-[8px]">
-                              {initials}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-medium text-foreground">
-                                {note.authorName}
-                              </span>
-                              <span className="text-[10px] text-muted-foreground">
-                                {formatDistanceToNow(new Date(note.timestamp), {
-                                  addSuffix: true,
-                                })}
-                              </span>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                              {note.content}
-                            </p>
-                          </div>
-                        </div>
-                      )
-                    })}
-                </div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Progress Details
+                  </p>
                 </div>
               )}
 
