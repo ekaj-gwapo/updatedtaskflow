@@ -130,12 +130,10 @@ export function EmployeeDashboard() {
   const { tasks, currentUser, canAccessTask } = useTaskContext()
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [filterStatus, setFilterStatus] = useState<string>("all")
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null)
 
   const myTasks = useMemo(() => {
-    const targetEmployeeId = selectedEmployeeId || currentUser?.id
-    return tasks.filter((t) => t.assigneeId === targetEmployeeId)
-  }, [tasks, currentUser, selectedEmployeeId])
+    return tasks.filter((t) => t.assigneeId === currentUser?.id)
+  }, [tasks, currentUser])
 
   // Ensure selected task is accessible
   useEffect(() => {
@@ -165,11 +163,11 @@ export function EmployeeDashboard() {
 
   return (
     <div className="flex flex-1 min-h-0">
-      {/* Sidebar with Employee List and Profile */}
+      {/* Sidebar with My Tasks and Profile */}
       <div className="hidden lg:block">
         <EmployeeSidebar
-          selectedEmployeeId={selectedEmployeeId}
-          onSelectEmployee={setSelectedEmployeeId}
+          selectedEmployeeId={null}
+          onSelectEmployee={() => {}}
         />
       </div>
 

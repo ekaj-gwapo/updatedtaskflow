@@ -6,8 +6,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Users, ChevronRight, Mail, Phone, MapPin, Save, X } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { ClipboardList, User, Mail, Phone, MapPin, Save, X } from "lucide-react"
 
 interface EmployeeSidebarProps {
   selectedEmployeeId: string | null
@@ -18,8 +17,8 @@ export function EmployeeSidebar({
   selectedEmployeeId,
   onSelectEmployee,
 }: EmployeeSidebarProps) {
-  const { currentUser, tasks, allEmployees } = useTaskContext()
-  const [activeTab, setActiveTab] = useState<"employees" | "profile">("employees")
+  const { currentUser, tasks } = useTaskContext()
+  const [activeTab, setActiveTab] = useState<"tasks" | "profile">("tasks")
   const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [profileData, setProfileData] = useState({
     name: currentUser?.name || "",
@@ -29,20 +28,7 @@ export function EmployeeSidebar({
   })
   const [tempProfileData, setTempProfileData] = useState(profileData)
 
-  const getEmployeeTaskStats = (employeeId: string) => {
-    const employeeTasks = tasks.filter((t) => t.assigneeId === employeeId)
-    const total = employeeTasks.length
-    const inProgress = employeeTasks.filter(
-      (t) => t.status === "in-progress"
-    ).length
-    const completed = employeeTasks.filter(
-      (t) => t.status === "completed"
-    ).length
-    const overdue = employeeTasks.filter(
-      (t) => t.status !== "completed" && new Date(t.dueDate) < new Date()
-    ).length
-    return { total, inProgress, completed, overdue }
-  }
+  const myTasks = tasks.filter((t) => t.assigneeId === currentUser?.id)
 
   const handleEditProfile = () => {
     setTempProfileData(profileData)
@@ -99,15 +85,15 @@ export function EmployeeSidebar({
       {/* Tab Navigation */}
       <div className="flex gap-1 p-3 border-b border-border">
         <button
-          onClick={() => setActiveTab("employees")}
+          onClick={() => setActiveTab("tasks")}
           className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-            activeTab === "employees"
+            activeTab === "tasks"
               ? "bg-primary text-primary-foreground"
               : "bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground"
           }`}
         >
-          <Users className="h-4 w-4" />
-          <span>Employee</span>
+          <ClipboardList className="h-4 w-4" />
+          <span>My Tasks</span>
         </button>
         <button
           onClick={() => setActiveTab("profile")}
@@ -117,7 +103,7 @@ export function EmployeeSidebar({
               : "bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground"
           }`}
         >
-          <Users className="h-4 w-4" />
+          <User className="h-4 w-4" />
           <span>Profile</span>
         </button>
       </div>
@@ -125,109 +111,47 @@ export function EmployeeSidebar({
       {/* Content - Scrollable */}
       <ScrollArea className="flex-1">
         <div className="p-4">
-          {/* Employees Tab */}
-          {activeTab === "employees" && (
-            <div className="flex flex-col gap-0.5">
-              {/* All Employees option */}
-              <button
-                onClick={() => onSelectEmployee(null)}
-                className={cn(
-                  "w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
-                  selectedEmployeeId === null
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                )}
-              >
-                <div
-                  className={cn(
-                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-                    selectedEmployeeId === null
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-muted-foreground"
-                  )}
-                >
-                  <Users className="h-3.5 w-3.5" />
+          {/* My Tasks Tab */}
+          {activeTab === "tasks" && (
+            <div className="space-y-3">
+              {myTasks.length === 0 ? (
+                <div className="py-8 text-center text-sm text-muted-foreground">
+                  <ClipboardList className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
+                  <p>No tasks assigned yet</p>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">All Employees</p>
-                  <p className="text-xs text-muted-foreground">
-                    {tasks.length} total tasks
-                  </p>
-                </div>
-                {selectedEmployeeId === null && (
-                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-primary" />
-                )}
-              </button>
-
-              {/* Divider */}
-              <div className="h-px bg-border mx-2 my-1.5" />
-
-              {/* Employee List */}
-              {allEmployees.map((employee) => {
-                const stats = getEmployeeTaskStats(employee.id)
-                const isSelected = selectedEmployeeId === employee.id
-                const initials = employee.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()
-
-                return (
-                  <button
-                    key={employee.id}
-                    onClick={() => onSelectEmployee(employee.id)}
-                    className={cn(
-                      "w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
-                      isSelected
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                    )}
+              ) : (
+                myTasks.map((task) => (
+                  <div
+                    key={task.id}
+                    className="p-3 rounded-lg border border-border bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
                   >
-                    <Avatar className="h-8 w-8 shrink-0">
-                      <AvatarFallback
-                        className={cn(
-                          "text-xs font-medium",
-                          isSelected
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-secondary text-foreground"
-                        )}
-                      >
-                        {initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className={cn(
-                          "text-sm font-medium truncate",
-                          isSelected ? "text-foreground" : ""
-                        )}
-                      >
-                        {employee.name}
-                      </p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[11px]">
-                          {stats.total} task{stats.total !== 1 ? "s" : ""}
-                        </span>
-                        {stats.inProgress > 0 && (
-                          <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--warning))]">
-                            <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--warning))]" />
-                            {stats.inProgress}
+                    <div className="flex items-start gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{task.title}</p>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{task.description}</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span
+                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                              task.status === "completed"
+                                ? "bg-green-100 text-green-700"
+                                : task.status === "in-progress"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : "bg-gray-100 text-gray-700"
+                            }`}
+                          >
+                            {task.status === "completed" ? "Completed" : task.status === "in-progress" ? "In Progress" : "To Do"}
                           </span>
-                        )}
-                        {stats.overdue > 0 && (
-                          <span className="flex items-center gap-1 text-[11px] text-destructive">
-                            <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
-                            {stats.overdue}
+                          <span className="text-xs text-muted-foreground">
+                            Due {task.dueDate.includes("T")
+                              ? new Date(task.dueDate).toLocaleDateString()
+                              : task.dueDate}
                           </span>
-                        )}
+                        </div>
                       </div>
                     </div>
-                    {isSelected && (
-                      <ChevronRight className="h-3.5 w-3.5 shrink-0 text-primary" />
-                    )}
-                  </button>
-                )
-              })}
+                  </div>
+                ))
+              )}
             </div>
           )}
 
