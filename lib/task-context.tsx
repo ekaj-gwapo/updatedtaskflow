@@ -42,6 +42,16 @@ interface TaskContextType {
 
   // Employees
   allEmployees: User[]
+
+  // Access Control & Employee Action Tracking
+  getEmployeeVisibleTasks: () => Task[]
+  canAccessTask: (taskId: string) => boolean
+  getEmployeeActionSummary: () => {
+    totalStepsCompleted: number
+    totalStepsIncomplete: number
+    completionPercentage: number
+    taskBreakdown: Array<{ taskId: string; title: string; completedSteps: number; totalSteps: number }>
+  }
 }
 
 const TaskContext = createContext<TaskContextType | null>(null)
@@ -258,6 +268,74 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     [tasks]
   )
 
+  // Access Control: Get only tasks visible to current employee
+  const getEmployeeVisibleTasks = useCallback(() => {
+    if (currentRole === "admin") {
+      return []
+    }
+    if (currentRole === "employee" && currentUser) {
+      return tasks.filter((t) => t.assigneeId === currentUser.id)
+    }
+    return []
+  }, [tasks, currentRole, currentUser])
+
+  // Access Control: Check if current user can access a specific task
+  const canAccessTask = useCallback(
+    (taskId: string) => {
+      if (currentRole === "admin") {
+        return true
+      }
+      if (currentRole === "employee" && currentUser) {
+        const task = tasks.find((t) => t.id === taskId)
+        return task ? task.assigneeId === currentUser.id : false
+      }
+      return false
+    },
+    [tasks, currentRole, currentUser]
+  )
+
+  // Get employee action summary: count completed/incomplete action steps
+  const getEmployeeActionSummary = useCallback(() => {
+    if (currentRole !== "employee" || !currentUser) {
+      return {
+        totalStepsCompleted: 0,
+        totalStepsIncomplete: 0,
+        completionPercentage: 0,
+        taskBreakdown: [],
+      }
+    }
+
+    const employeeTasks = tasks.filter((t) => t.assigneeId === currentUser.id)
+    let totalStepsCompleted = 0
+    let totalStepsIncomplete = 0
+    const taskBreakdown: Array<{ taskId: string; title: string; completedSteps: number; totalSteps: number }> = []
+
+    employeeTasks.forEach((task) => {
+      if (task.actionSteps && task.actionSteps.length > 0) {
+        const completed = task.actionSteps.filter((step) => step.completed).length
+        const total = task.actionSteps.length
+        totalStepsCompleted += completed
+        totalStepsIncomplete += total - completed
+        taskBreakdown.push({
+          taskId: task.id,
+          title: task.title,
+          completedSteps: completed,
+          totalSteps: total,
+        })
+      }
+    })
+
+    const totalSteps = totalStepsCompleted + totalStepsIncomplete
+    const completionPercentage = totalSteps > 0 ? Math.round((totalStepsCompleted / totalSteps) * 100) : 0
+
+    return {
+      totalStepsCompleted,
+      totalStepsIncomplete,
+      completionPercentage,
+      taskBreakdown,
+    }
+  }, [tasks, currentRole, currentUser])
+
   return (
     <TaskContext.Provider
       value={{
@@ -277,6 +355,9 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         reports,
         createReport,
         allEmployees: employees,
+        getEmployeeVisibleTasks,
+        canAccessTask,
+        getEmployeeActionSummary,
       }}
     >
       {children}

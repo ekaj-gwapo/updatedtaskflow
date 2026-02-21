@@ -34,8 +34,22 @@ export function TaskDetailPanel({
   showNoteInput = false,
   showDeleteButton = false,
 }: TaskDetailPanelProps) {
-  const { currentRole, updateTaskStatus, addProgressNote, deleteTask, addActionStep, updateActionStepStatus, deleteActionStep, addStepNote } = useTaskContext()
+  const { currentRole, currentUser, updateTaskStatus, addProgressNote, deleteTask, addActionStep, updateActionStepStatus, deleteActionStep, addStepNote, canAccessTask } = useTaskContext()
   const [noteContent, setNoteContent] = useState("")
+
+  // Security check: employees can only view their assigned tasks
+  const hasAccess = canAccessTask(task.id)
+  
+  if (!hasAccess && currentRole === "employee") {
+    return (
+      <div className="flex flex-col h-full bg-card border-l border-border items-center justify-center">
+        <div className="text-center p-4">
+          <p className="text-sm text-muted-foreground font-medium">Access Denied</p>
+          <p className="text-xs text-muted-foreground mt-1">You can only view your assigned tasks.</p>
+        </div>
+      </div>
+    )
+  }
 
   const isOverdue =
     task.status !== "completed" && new Date(task.dueDate) < new Date()

@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react"
 import { useTaskContext } from "@/lib/task-context"
 import { TaskDetailPanel } from "@/components/task-detail-panel"
 import { EmployeeSidebar } from "@/components/employee-sidebar"
+import { EmployeeActionTracking } from "@/components/employee-action-tracking"
 import { StatusBadge, PriorityBadge } from "@/components/status-badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -127,7 +128,7 @@ function EmployeeTaskCard({
 }
 
 export function EmployeeDashboard() {
-  const { tasks, currentUser } = useTaskContext()
+  const { tasks, currentUser, canAccessTask } = useTaskContext()
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [filterStatus, setFilterStatus] = useState<string>("all")
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null)
@@ -135,6 +136,13 @@ export function EmployeeDashboard() {
   const myTasks = useMemo(() => {
     return tasks.filter((t) => t.assigneeId === currentUser?.id)
   }, [tasks, currentUser])
+
+  // Ensure selected task is accessible
+  useEffect(() => {
+    if (selectedTask && !canAccessTask(selectedTask.id)) {
+      setSelectedTask(null)
+    }
+  }, [selectedTask, canAccessTask])
 
   const filteredTasks = useMemo(() => {
     if (filterStatus === "all") return myTasks
@@ -185,6 +193,9 @@ export function EmployeeDashboard() {
               </Card>
             ))}
           </div>
+
+          {/* Employee Action Tracking - Only visible to employees */}
+          <EmployeeActionTracking />
 
           {/* Task Filter Tabs */}
           <Tabs value={filterStatus} onValueChange={setFilterStatus}>
