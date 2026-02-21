@@ -126,7 +126,7 @@ export function AdminDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className={`flex flex-col min-w-0 overflow-hidden ${selectedTask || showReport ? "w-0 lg:flex-1" : "flex-1"}`}>
         <div className="p-4 lg:p-6 flex flex-col gap-6">
           {/* Header with employee context */}
           {selectedEmployee && (
@@ -248,7 +248,7 @@ export function AdminDashboard() {
 
       {/* Side Panel */}
       {selectedTask && !showReport && (
-        <div className="hidden lg:block w-[380px] shrink-0 border-l border-border overflow-y-auto">
+        <div className="w-[380px] shrink-0 border-l border-border overflow-y-auto">
           <TaskDetailPanel
             task={tasks.find((t) => t.id === selectedTask.id) || selectedTask}
             onClose={() => setSelectedTask(null)}
@@ -259,7 +259,7 @@ export function AdminDashboard() {
       )}
 
       {showReport && (
-        <div className="hidden lg:block w-[380px] shrink-0 border-l border-border overflow-y-auto">
+        <div className="w-[380px] shrink-0 border-l border-border overflow-y-auto">
           <WeeklyReportPanel onClose={() => setShowReport(false)} />
         </div>
       )}
