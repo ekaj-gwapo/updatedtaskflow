@@ -126,7 +126,7 @@ export function AdminDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className={`flex flex-col min-w-0 overflow-hidden ${selectedTask || showReport ? "w-0 lg:flex-1" : "flex-1"}`}>
+      <div className={`flex flex-col min-w-0 overflow-y-auto ${selectedTask || showReport ? "w-0 lg:flex-1" : "flex-1"}`}>
         <div className="p-4 lg:p-6 flex flex-col gap-6">
           {/* Header with employee context */}
           {selectedEmployee && (
