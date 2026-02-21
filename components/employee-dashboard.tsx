@@ -4,7 +4,6 @@ import { useState, useMemo, useEffect } from "react"
 import { useTaskContext } from "@/lib/task-context"
 import { TaskDetailPanel } from "@/components/task-detail-panel"
 import { EmployeeSidebar } from "@/components/employee-sidebar"
-import { EmployeeActionTracking } from "@/components/employee-action-tracking"
 import { StatusBadge, PriorityBadge } from "@/components/status-badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -134,8 +133,11 @@ export function EmployeeDashboard() {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null)
 
   const myTasks = useMemo(() => {
-    return tasks.filter((t) => t.assigneeId === currentUser?.id)
-  }, [tasks, currentUser])
+    // If an employee is selected in the sidebar, only show their tasks
+    // Otherwise show current logged-in user's tasks
+    const targetEmployeeId = selectedEmployeeId || currentUser?.id
+    return tasks.filter((t) => t.assigneeId === targetEmployeeId)
+  }, [tasks, currentUser, selectedEmployeeId])
 
   // Ensure selected task is accessible
   useEffect(() => {
@@ -193,9 +195,6 @@ export function EmployeeDashboard() {
               </Card>
             ))}
           </div>
-
-          {/* Employee Action Tracking - Only visible to employees */}
-          <EmployeeActionTracking />
 
           {/* Task Filter Tabs */}
           <Tabs value={filterStatus} onValueChange={setFilterStatus}>
