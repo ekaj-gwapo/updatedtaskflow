@@ -78,30 +78,32 @@ export function ActionStepsSection({
         </div>
       )}
 
-      {/* Add new step */}
-      <div className="flex gap-2">
-        <input
-          type="text"
-          value={newStepTitle}
-          onChange={(e) => setNewStepTitle(e.target.value)}
-          placeholder="Add a new action step..."
-          className="flex-1 px-3 py-2 bg-secondary border border-border rounded text-sm text-foreground placeholder:text-muted-foreground"
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault()
-              handleAddStep()
-            }
-          }}
-        />
-        <Button
-          size="sm"
-          onClick={handleAddStep}
-          disabled={!newStepTitle.trim()}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 w-9 p-0 shrink-0"
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
-      </div>
+      {/* Add new step - Only for employees */}
+      {userRole !== "admin" && (
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newStepTitle}
+            onChange={(e) => setNewStepTitle(e.target.value)}
+            placeholder="Add a new action step..."
+            className="flex-1 px-3 py-2 bg-secondary border border-border rounded text-sm text-foreground placeholder:text-muted-foreground"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault()
+                handleAddStep()
+              }
+            }}
+          />
+          <Button
+            size="sm"
+            onClick={handleAddStep}
+            disabled={!newStepTitle.trim()}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 w-9 p-0 shrink-0"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
       {/* Steps list */}
       {steps.length === 0 ? (
@@ -112,11 +114,22 @@ export function ActionStepsSection({
             <div key={step.id} className="border border-border rounded-lg overflow-hidden bg-secondary/30">
               {/* Step header */}
               <div className="flex items-center gap-3 p-3 cursor-pointer hover:bg-secondary/50 transition-colors">
-                <Checkbox
-                  checked={step.completed}
-                  onChange={(e) => onUpdateStepStatus(step.id, e.target.checked)}
-                  className="h-4 w-4"
-                />
+                {userRole !== "admin" && (
+                  <Checkbox
+                    checked={step.completed}
+                    onChange={(e) => onUpdateStepStatus(step.id, e.target.checked)}
+                    className="h-4 w-4"
+                  />
+                )}
+                {userRole === "admin" && (
+                  <div
+                    className={`h-4 w-4 rounded border border-border flex items-center justify-center ${
+                      step.completed ? "bg-primary" : "bg-secondary"
+                    }`}
+                  >
+                    {step.completed && <span className="text-white text-xs">✓</span>}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium text-muted-foreground">Step {index + 1}</span>
@@ -200,43 +213,45 @@ export function ActionStepsSection({
                     </div>
                   )}
 
-                  {/* Add note input */}
-                  <div className="space-y-2 pt-2 border-t border-border">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      Add Note
-                    </p>
-                    <div className="flex gap-2">
-                      <textarea
-                        value={stepNoteInputs[step.id] || ""}
-                        onChange={(e) =>
-                          setStepNoteInputs((prev) => ({
-                            ...prev,
-                            [step.id]: e.target.value,
-                          }))
-                        }
-                        placeholder="Add a progress detail for this step..."
-                        rows={2}
-                        className="flex-1 px-2.5 py-2 bg-secondary border border-border rounded text-xs text-foreground placeholder:text-muted-foreground resize-none"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                            e.preventDefault()
-                            handleAddNote(step.id)
+                  {/* Add note input - Only for employees */}
+                  {userRole !== "admin" && (
+                    <div className="space-y-2 pt-2 border-t border-border">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Add Note
+                      </p>
+                      <div className="flex gap-2">
+                        <textarea
+                          value={stepNoteInputs[step.id] || ""}
+                          onChange={(e) =>
+                            setStepNoteInputs((prev) => ({
+                              ...prev,
+                              [step.id]: e.target.value,
+                            }))
                           }
-                        }}
-                      />
-                      <Button
-                        size="sm"
-                        onClick={() => handleAddNote(step.id)}
-                        disabled={!stepNoteInputs[step.id]?.trim()}
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 self-end h-8 w-8 p-0"
-                      >
-                        <Send className="h-3.5 w-3.5" />
-                      </Button>
+                          placeholder="Add a progress detail for this step..."
+                          rows={2}
+                          className="flex-1 px-2.5 py-2 bg-secondary border border-border rounded text-xs text-foreground placeholder:text-muted-foreground resize-none"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                              e.preventDefault()
+                              handleAddNote(step.id)
+                            }
+                          }}
+                        />
+                        <Button
+                          size="sm"
+                          onClick={() => handleAddNote(step.id)}
+                          disabled={!stepNoteInputs[step.id]?.trim()}
+                          className="bg-primary text-primary-foreground hover:bg-primary/90 self-end h-8 w-8 p-0"
+                        >
+                          <Send className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">
+                        Press Ctrl+Enter to send
+                      </p>
                     </div>
-                    <p className="text-[10px] text-muted-foreground">
-                      Press Ctrl+Enter to send
-                    </p>
-                  </div>
+                  )}
                 </div>
               )}
             </div>
