@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useTaskContext } from "@/lib/task-context"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Users, ChevronRight } from "lucide-react"
+import { Users, ChevronRight, ClipboardList, ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface AdminSidebarProps {
@@ -16,7 +16,8 @@ export function AdminSidebar({
   selectedEmployeeId,
   onSelectEmployee,
 }: AdminSidebarProps) {
-  const { allEmployees, tasks } = useTaskContext()
+  const { allEmployees, tasks, currentUser } = useTaskContext()
+  const [viewingEmployeeId, setViewingEmployeeId] = useState<string | null>(null)
 
   const getEmployeeTaskStats = (employeeId: string) => {
     const employeeTasks = tasks.filter((t) => t.assigneeId === employeeId)
@@ -37,122 +38,167 @@ export function AdminSidebar({
     <aside className="w-80 shrink-0 border-r border-border bg-card flex flex-col h-full">
       {/* Sidebar Header */}
       <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-            <Users className="h-5 w-5 text-primary-foreground" />
+            <ClipboardList className="h-5 w-5 text-primary-foreground" />
           </div>
-          <h2 className="text-lg font-semibold text-foreground">Admin Panel</h2>
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Admin Workspace</h2>
+            <p className="text-xs text-muted-foreground">Manage all tasks</p>
+          </div>
         </div>
       </div>
 
       {/* Tab Navigation */}
       <div className="p-3 border-b border-border">
-        <p className="text-sm font-medium text-foreground mb-2">Employees</p>
+        <div className="flex items-center gap-2">
+          <Users className="h-4 w-4 text-primary" />
+          <p className="text-sm font-semibold text-foreground">Employees</p>
+        </div>
       </div>
 
       {/* Content - Scrollable */}
       <ScrollArea className="flex-1">
         <div className="p-4 flex flex-col gap-0.5">
-          {/* All Employees option */}
-          <button
-            onClick={() => onSelectEmployee(null)}
-            className={cn(
-              "w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
-              selectedEmployeeId === null
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:bg-accent hover:text-foreground"
-            )}
-          >
-            <div
-              className={cn(
-                "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-                selectedEmployeeId === null
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-muted-foreground"
-              )}
-            >
-              <Users className="h-3.5 w-3.5" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">All Employees</p>
-              <p className="text-xs text-muted-foreground">
-                {tasks.length} total tasks
-              </p>
-            </div>
-            {selectedEmployeeId === null && (
-              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-primary" />
-            )}
-          </button>
+          {/* Show Employee List */}
+          {!viewingEmployeeId ? (
+            <>
+              {/* Employee List */}
+              {allEmployees.map((employee) => {
+                const stats = getEmployeeTaskStats(employee.id)
+                const initials = employee.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()
 
-          {/* Divider */}
-          <div className="h-px bg-border mx-2 my-1.5" />
-
-          {/* Employee List */}
-          {allEmployees.map((employee) => {
-            const stats = getEmployeeTaskStats(employee.id)
-            const isSelected = selectedEmployeeId === employee.id
-            const initials = employee.name
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-              .toUpperCase()
-
-            return (
+                return (
+                  <button
+                    key={employee.id}
+                    onClick={() => setViewingEmployeeId(employee.id)}
+                    className={cn(
+                      "w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
+                      "text-muted-foreground hover:bg-accent hover:text-foreground"
+                    )}
+                  >
+                    <Avatar className="h-8 w-8 shrink-0">
+                      <AvatarFallback
+                        className="text-xs font-medium bg-secondary text-foreground"
+                      >
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {employee.name}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[11px]">
+                          {stats.total} task{stats.total !== 1 ? "s" : ""}
+                        </span>
+                        {stats.inProgress > 0 && (
+                          <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--warning))]">
+                            <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--warning))]" />
+                            {stats.inProgress}
+                          </span>
+                        )}
+                        {stats.overdue > 0 && (
+                          <span className="flex items-center gap-1 text-[11px] text-destructive">
+                            <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
+                            {stats.overdue}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  </button>
+                )
+              })}
+            </>
+          ) : (
+            <>
+              {/* Back button */}
               <button
-                key={employee.id}
-                onClick={() => onSelectEmployee(employee.id)}
-                className={cn(
-                  "w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
-                  isSelected
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                )}
+                onClick={() => {
+                  setViewingEmployeeId(null)
+                  onSelectEmployee(null)
+                }}
+                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors text-muted-foreground hover:bg-accent hover:text-foreground mb-3"
               >
-                <Avatar className="h-8 w-8 shrink-0">
-                  <AvatarFallback
-                    className={cn(
-                      "text-xs font-medium",
-                      isSelected
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary text-foreground"
-                    )}
-                  >
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p
-                    className={cn(
-                      "text-sm font-medium truncate",
-                      isSelected ? "text-foreground" : ""
-                    )}
-                  >
-                    {employee.name}
-                  </p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[11px]">
-                      {stats.total} task{stats.total !== 1 ? "s" : ""}
-                    </span>
-                    {stats.inProgress > 0 && (
-                      <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--warning))]">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--warning))]" />
-                        {stats.inProgress}
-                      </span>
-                    )}
-                    {stats.overdue > 0 && (
-                      <span className="flex items-center gap-1 text-[11px] text-destructive">
-                        <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
-                        {stats.overdue}
-                      </span>
-                    )}
+                <ArrowLeft className="h-4 w-4" />
+                <span className="text-sm font-medium">Back to Employees</span>
+              </button>
+
+              {/* Divider */}
+              <div className="h-px bg-border mx-2 my-2" />
+
+              {/* Selected Employee Header */}
+              {viewingEmployeeId && allEmployees.find(e => e.id === viewingEmployeeId) && (
+                <div className="p-3 rounded-lg bg-secondary/30 mb-3">
+                  <div className="flex items-center gap-2">
+                    {(() => {
+                      const emp = allEmployees.find(e => e.id === viewingEmployeeId)
+                      const initials = emp?.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase()
+                      return (
+                        <>
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback className="text-xs font-medium bg-primary text-primary-foreground">
+                              {initials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{emp?.name}</p>
+                            <p className="text-xs text-muted-foreground">{emp?.email}</p>
+                          </div>
+                        </>
+                      )
+                    })()}
                   </div>
                 </div>
-                {isSelected && (
-                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-primary" />
-                )}
-              </button>
-            )
-          })}
+              )}
+
+              {/* Employee Tasks */}
+              {viewingEmployeeId && (() => {
+                const employeeTasks = tasks.filter(t => t.assigneeId === viewingEmployeeId)
+                if (employeeTasks.length === 0) {
+                  return (
+                    <div className="py-8 text-center text-sm text-muted-foreground">
+                      <ClipboardList className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
+                      <p>No tasks assigned</p>
+                    </div>
+                  )
+                }
+                return (
+                  <div className="space-y-2">
+                    {employeeTasks.map(task => (
+                      <button
+                        key={task.id}
+                        onClick={() => onSelectEmployee(viewingEmployeeId)}
+                        className="w-full flex flex-col items-start gap-1 p-2.5 rounded-lg border border-border bg-secondary/30 hover:bg-secondary/50 transition-colors text-left"
+                      >
+                        <p className="text-sm font-medium text-foreground truncate w-full">{task.title}</p>
+                        <div className="flex items-center gap-2 w-full">
+                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                            task.status === "completed"
+                              ? "bg-green-100 text-green-700"
+                              : task.status === "in-progress"
+                                ? "bg-blue-100 text-blue-700"
+                                : "bg-gray-100 text-gray-700"
+                          }`}>
+                            {task.status === "completed" ? "Completed" : task.status === "in-progress" ? "In Progress" : "To Do"}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )
+              })()}
+            </>
+          )}
         </div>
       </ScrollArea>
     </aside>
