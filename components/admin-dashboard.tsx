@@ -5,7 +5,7 @@ import { useTaskContext } from "@/lib/task-context"
 import { StatsCards } from "@/components/stats-cards"
 import { CreateTaskDialog } from "@/components/create-task-dialog"
 import { TaskDetailPanel } from "@/components/task-detail-panel"
-import { EmployeeSidebar } from "@/components/employee-sidebar"
+import { AdminSidebar } from "@/components/admin-sidebar"
 import { StatusBadge, PriorityBadge } from "@/components/status-badge"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -117,9 +117,9 @@ export function AdminDashboard() {
 
   return (
     <div className="flex flex-1 min-h-0">
-      {/* Employee Sidebar */}
+      {/* Admin Sidebar */}
       <div className="hidden md:block">
-        <EmployeeSidebar
+        <AdminSidebar
           selectedEmployeeId={selectedEmployeeId}
           onSelectEmployee={handleSelectEmployee}
         />
