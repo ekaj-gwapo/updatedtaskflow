@@ -169,12 +169,9 @@ export function ActionStepsSection({
                 )}
               </div>
 
-              {/* Step details (notes) - Show progress notes by default */}
+              {/* Progress notes - Show by default */}
               {step.notes.length > 0 && (
                 <div className="border-t border-border px-3 py-3 bg-background/50 space-y-2">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Progress Details
-                  </p>
                   <div className="flex flex-col gap-2">
                     {step.notes.map((note) => {
                       const initials = note.authorName
@@ -206,7 +203,7 @@ export function ActionStepsSection({
                         </div>
                       )
                     })}
-                  </div>
+                </div>
                 </div>
               )}
 
