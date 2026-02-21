@@ -117,18 +117,16 @@ export function AdminDashboard() {
 
   return (
     <div className="flex flex-1 min-h-0">
-      {/* Admin Sidebar - Hide when task is selected */}
-      {!selectedTask && (
-        <div className="hidden md:block">
-          <AdminSidebar
-            selectedEmployeeId={selectedEmployeeId}
-            onSelectEmployee={handleSelectEmployee}
-          />
-        </div>
-      )}
+      {/* Admin Sidebar */}
+      <div className="hidden lg:block w-80 shrink-0 border-r border-border">
+        <AdminSidebar
+          selectedEmployeeId={selectedEmployeeId}
+          onSelectEmployee={handleSelectEmployee}
+        />
+      </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <div className="p-4 lg:p-6 flex flex-col gap-6">
           {/* Header with employee context */}
           {selectedEmployee && (
@@ -248,9 +246,9 @@ export function AdminDashboard() {
         </div>
       </div>
 
-      {/* Side Panel - Always show when task selected */}
+      {/* Side Panel */}
       {selectedTask && !showReport && (
-        <div className="w-full md:w-[380px] shrink-0 border-l border-border overflow-y-auto">
+        <div className="hidden lg:block w-[380px] shrink-0 border-l border-border overflow-y-auto">
           <TaskDetailPanel
             task={tasks.find((t) => t.id === selectedTask.id) || selectedTask}
             onClose={() => setSelectedTask(null)}
@@ -261,7 +259,7 @@ export function AdminDashboard() {
       )}
 
       {showReport && (
-        <div className="w-full md:w-[380px] shrink-0 border-l border-border overflow-y-auto">
+        <div className="hidden lg:block w-[380px] shrink-0 border-l border-border overflow-y-auto">
           <WeeklyReportPanel onClose={() => setShowReport(false)} />
         </div>
       )}
