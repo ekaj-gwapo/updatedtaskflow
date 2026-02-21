@@ -169,84 +169,89 @@ export function ActionStepsSection({
                 )}
               </div>
 
-              {/* Progress Details - Show notes */}
-              {step.notes.length > 0 && (
-                <div className="border-t border-border px-3 py-3 bg-background/50 space-y-2">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Progress Details
-                  </p>
-                  <div className="flex flex-col gap-2">
-                    {step.notes.map((note) => {
-                      const initials = note.authorName
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                      return (
-                        <div key={note.id} className="flex gap-2">
-                          <Avatar className="h-5 w-5 shrink-0 mt-0.5">
-                            <AvatarFallback className="bg-primary text-primary-foreground text-[8px]">
-                              {initials}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-medium text-foreground">
-                                {note.authorName}
-                              </span>
-                              <span className="text-[10px] text-muted-foreground">
-                                {formatDistanceToNow(new Date(note.timestamp), {
-                                  addSuffix: true,
-                                })}
-                              </span>
+              {/* Step details (notes) */}
+              {expandedSteps.has(step.id) && (
+                <div className="border-t border-border px-3 py-3 bg-background/50 space-y-3">
+                  {/* Existing notes */}
+                  {step.notes.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Notes ({step.notes.length})
+                      </p>
+                      <div className="flex flex-col gap-2">
+                        {step.notes.map((note) => {
+                          const initials = note.authorName
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                          return (
+                            <div key={note.id} className="flex gap-2">
+                              <Avatar className="h-5 w-5 shrink-0 mt-0.5">
+                                <AvatarFallback className="bg-primary text-primary-foreground text-[8px]">
+                                  {initials}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs font-medium text-foreground">
+                                    {note.authorName}
+                                  </span>
+                                  <span className="text-[10px] text-muted-foreground">
+                                    {formatDistanceToNow(new Date(note.timestamp), {
+                                      addSuffix: true,
+                                    })}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                                  {note.content}
+                                </p>
+                              </div>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                              {note.content}
-                            </p>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
 
-              {/* Add note input - Only for employees, shown when expanded */}
-              {expandedSteps.has(step.id) && userRole !== "admin" && (
-                <div className="border-t border-border px-3 py-3 bg-background/50 space-y-2">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Add Progress Detail
-                  </p>
-                  <div className="flex gap-2">
-                    <textarea
-                      value={stepNoteInputs[step.id] || ""}
-                      onChange={(e) =>
-                        setStepNoteInputs((prev) => ({
-                          ...prev,
-                          [step.id]: e.target.value,
-                        }))
-                      }
-                      placeholder="Add a progress detail for this step..."
-                      rows={2}
-                      className="flex-1 px-2.5 py-2 bg-secondary border border-border rounded text-xs text-foreground placeholder:text-muted-foreground resize-none"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                          e.preventDefault()
-                          handleAddNote(step.id)
-                        }
-                      }}
-                    />
-                    <Button
-                      size="sm"
-                      onClick={() => handleAddNote(step.id)}
-                      disabled={!stepNoteInputs[step.id]?.trim()}
-                      className="bg-primary text-primary-foreground hover:bg-primary/90 self-end h-8 w-8 p-0"
-                    >
-                      <Send className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground">
-                    Press Ctrl+Enter to send
-                  </p>
+                  {/* Add note input - Only for employees */}
+                  {userRole !== "admin" && (
+                    <div className="space-y-2 pt-2 border-t border-border">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Add Note
+                      </p>
+                      <div className="flex gap-2">
+                        <textarea
+                          value={stepNoteInputs[step.id] || ""}
+                          onChange={(e) =>
+                            setStepNoteInputs((prev) => ({
+                              ...prev,
+                              [step.id]: e.target.value,
+                            }))
+                          }
+                          placeholder="Add a progress detail for this step..."
+                          rows={2}
+                          className="flex-1 px-2.5 py-2 bg-secondary border border-border rounded text-xs text-foreground placeholder:text-muted-foreground resize-none"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                              e.preventDefault()
+                              handleAddNote(step.id)
+                            }
+                          }}
+                        />
+                        <Button
+                          size="sm"
+                          onClick={() => handleAddNote(step.id)}
+                          disabled={!stepNoteInputs[step.id]?.trim()}
+                          className="bg-primary text-primary-foreground hover:bg-primary/90 self-end h-8 w-8 p-0"
+                        >
+                          <Send className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">
+                        Press Ctrl+Enter to send
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
