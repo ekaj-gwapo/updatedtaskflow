@@ -117,13 +117,15 @@ export function AdminDashboard() {
 
   return (
     <div className="flex flex-1 min-h-0">
-      {/* Admin Sidebar */}
-      <div className="hidden md:block">
-        <AdminSidebar
-          selectedEmployeeId={selectedEmployeeId}
-          onSelectEmployee={handleSelectEmployee}
-        />
-      </div>
+      {/* Admin Sidebar - Hide when task is selected */}
+      {!selectedTask && (
+        <div className="hidden md:block">
+          <AdminSidebar
+            selectedEmployeeId={selectedEmployeeId}
+            onSelectEmployee={handleSelectEmployee}
+          />
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
@@ -246,9 +248,9 @@ export function AdminDashboard() {
         </div>
       </div>
 
-      {/* Side Panel */}
+      {/* Side Panel - Always show when task selected */}
       {selectedTask && !showReport && (
-        <div className="hidden lg:block w-[380px] shrink-0 border-l border-border overflow-y-auto">
+        <div className="w-full md:w-[380px] shrink-0 border-l border-border overflow-y-auto">
           <TaskDetailPanel
             task={tasks.find((t) => t.id === selectedTask.id) || selectedTask}
             onClose={() => setSelectedTask(null)}
@@ -259,7 +261,7 @@ export function AdminDashboard() {
       )}
 
       {showReport && (
-        <div className="hidden lg:block w-[380px] shrink-0 border-l border-border overflow-y-auto">
+        <div className="w-full md:w-[380px] shrink-0 border-l border-border overflow-y-auto">
           <WeeklyReportPanel onClose={() => setShowReport(false)} />
         </div>
       )}
