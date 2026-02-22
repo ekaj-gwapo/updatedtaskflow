@@ -20,7 +20,7 @@ interface TaskContextType {
   // Auth
   currentUser: User | null
   currentRole: UserRole | null
-  login: (role: UserRole, employeeId?: string) => void
+  login: (role: UserRole, userId?: string, userData?: any) => void
   logout: () => void
 
   // Tasks
@@ -62,19 +62,35 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [reports, setReports] = useState<WeeklyReport[]>(initialReports)
 
-  const login = useCallback((role: UserRole, employeeId?: string) => {
-    if (role === "admin") {
+  const login = useCallback((role: UserRole, userId?: string, userData?: any) => {
+    if (userData) {
+      // Login with real user data from API
+      const user: User = {
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role.toLowerCase() as UserRole,
+        phone: userData.phone,
+        location: userData.location,
+      }
+      setCurrentUser(user)
+      setCurrentRole(userData.role.toLowerCase() as UserRole)
+    } else if (role === "admin") {
+      // Demo admin login
       setCurrentUser(adminUser)
+      setCurrentRole("admin")
     } else {
-      const emp = employees.find((e) => e.id === employeeId) || employees[0]
+      // Demo employee login
+      const emp = employees.find((e) => e.id === userId) || employees[0]
       setCurrentUser(emp)
+      setCurrentRole("employee")
     }
-    setCurrentRole(role)
   }, [])
 
   const logout = useCallback(() => {
     setCurrentUser(null)
     setCurrentRole(null)
+    localStorage.removeItem("token")
   }, [])
 
   const createTask = useCallback(
